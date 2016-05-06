@@ -4,23 +4,28 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <time.h>
+#include <limits.h>
+#include <math.h>
 #include <sys/time.h>
 #include <unistd.h>
-#include <math.h>
-
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/Xresource.h>
-
-#define DTIME       20
-#define WINDOW_WIDTH 800
-#define WINDOW_HEIGHT 600
+#include <time.h>
 
 #define NK_INCLUDE_FIXED_TYPES
+#define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
+#define NK_IMPLEMENTATION
+#define NK_XLIB_IMPLEMENTATION
+#include "../../nuklear.h"
 #include "nuklear_xlib.h"
-#include "nuklear_xlib.c"
+
+#define DTIME           20
+#define WINDOW_WIDTH    800
+#define WINDOW_HEIGHT   600
+
+#define UNUSED(a) (void)a
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+#define MAX(a,b) ((a) < (b) ? (b) : (a))
+#define LEN(a) (sizeof(a)/sizeof(a)[0])
 
 typedef struct XWindow XWindow;
 struct XWindow {
@@ -75,6 +80,25 @@ sleep_for(long t)
     while(-1 == nanosleep(&req, &req));
 }
 
+/* ===============================================================
+ *
+ *                          EXAMPLE
+ *
+ * ===============================================================*/
+/* This are some code examples to provide a small overview of what can be
+ * done with this library. To try out an example uncomment the include
+ * and the corresponding function. */
+
+/*#include "../style.c"*/
+/*#include "../calculator.c"*/
+/*#include "../overview.c"*/
+/*#include "../node_editor.c"*/
+
+/* ===============================================================
+ *
+ *                          DEMO
+ *
+ * ===============================================================*/
 int
 main(void)
 {
@@ -87,6 +111,8 @@ main(void)
     /* X11 */
     memset(&xw, 0, sizeof xw);
     xw.dpy = XOpenDisplay(NULL);
+    if (!xw.dpy) die("Could not open a display; perhaps $DISPLAY is not set?");
+
     xw.root = DefaultRootWindow(xw.dpy);
     xw.screen = XDefaultScreen(xw.dpy);
     xw.vis = XDefaultVisual(xw.dpy, xw.screen);
@@ -106,10 +132,16 @@ main(void)
     xw.width = (unsigned int)xw.attr.width;
     xw.height = (unsigned int)xw.attr.height;
 
-
     /* GUI */
     xw.font = nk_xfont_create(xw.dpy, "fixed");
     ctx = nk_xlib_init(xw.font, xw.dpy, xw.screen, xw.win, xw.width, xw.height);
+
+    /* style.c */
+    /*set_style(ctx, THEME_WHITE);*/
+    /*set_style(ctx, THEME_RED);*/
+    /*set_style(ctx, THEME_BLUE);*/
+    /*set_style(ctx, THEME_DARK);*/
+
     while (running)
     {
         /* Input */
@@ -138,11 +170,17 @@ main(void)
             nk_layout_row_dynamic(ctx, 30, 2);
             if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
             if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
-            nk_layout_row_dynamic(ctx, 22, 1);
+            nk_layout_row_dynamic(ctx, 25, 1);
             nk_property_int(ctx, "Compression:", 0, &property, 100, 10, 1);
         }
         nk_end(ctx);}
         if (nk_window_is_closed(ctx, "Demo")) break;
+
+        /* -------------- EXAMPLES ---------------- */
+        /*calculator(ctx);*/
+        /*overview(ctx);*/
+        /*node_editor(ctx);*/
+        /* ----------------------------------------- */
 
         /* Draw */
         XClearWindow(xw.dpy, xw.win);

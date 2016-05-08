@@ -283,7 +283,7 @@ typedef unsigned char nk_byte;
 #define NK_FLAG(x) (1 << (x))
 #define NK_STRINGIFY(x) #x
 #define NK_LINE_STR(x) NK_STRINGIFY(x)
-#define NK_FILE_LINE __FILE__":"NK_LINE_STR(__LINE__)
+#define NK_FILE_LINE __FILE__":" NK_LINE_STR(__LINE__)
 
 struct nk_buffer;
 struct nk_allocator;
@@ -14704,7 +14704,7 @@ nk_create_page_element(struct nk_context *ctx)
         /* allocate new page element from the back of the fixed size memory buffer */
         NK_STORAGE const nk_size size = sizeof(struct nk_page_element);
         NK_STORAGE const nk_size align = NK_ALIGNOF(struct nk_page_element);
-        elem = nk_buffer_alloc(&ctx->memory, NK_BUFFER_BACK, size, align);
+        elem = (nk_page_element *)nk_buffer_alloc(&ctx->memory, NK_BUFFER_BACK, size, align);
         NK_ASSERT(elem);
         if (!elem) return 0;
     }
